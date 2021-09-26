@@ -1,0 +1,46 @@
+version: "3"
+
+services:
+  webserver:
+    build:
+      context: ./airflow_docker
+      dockerfile: DockerFile
+    image: puckel/docker-airflow:latest
+    container_name: airflow_container
+    volumes:
+        - ./dags:/usr/local/airflow/dags
+        - ./include:/usr/local/airflow/include
+    ports:
+      - 5000:8080
+    networks:
+      - backend
+    restart: always
+    depends_on:
+      - mysql_db
+
+  mysql_db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: thisisit
+      MYSQL_DATABASE: sensordb
+    container_name: mysql_container
+    ports:
+      - 3307:3307
+    networks:
+      - backend
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    environment:
+      PMA_HOST: mysql_db
+      PMA_USER: root
+      PMA_PASSWORD: thisisinsane
+    ports:
+      - "8080:80"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: "bridge"
